@@ -8,7 +8,7 @@ Promise.all([
   .catch((err) => console.error('Error loading hurricane data:', err));
 
 function initApp(RAW_US, RAW_BASIN) {
-  const DAYS_IN_MONTH = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  const DAYS_IN_MONTH = window.DAYS_IN_MONTH;
   function toDayOfYear(month, day) {
     let cum = 0;
     for (let i = 1; i < month; i++) cum += DAYS_IN_MONTH[i];
@@ -25,197 +25,94 @@ function initApp(RAW_US, RAW_BASIN) {
   );
   computeRecordBadges(RAW_US);
   computeRecordBadges(RAW_BASIN);
-  const CAT_COLOR = { 0: 'var(--c-ts)', 1: '#f2c14e', 2: '#f0983b', 3: '#e6602f', 4: '#cf2b3e', 5: '#a63aa8' };
-  const CAT_COLOR_HEX = {
-    0: '#3fd0c9',
-    1: '#f2c14e',
-    2: '#f0983b',
-    3: '#e6602f',
-    4: '#cf2b3e',
-    5: '#a63aa8',
-    EX: '#8aa1b5',
+  const CAT_COLOR = window.CAT_COLOR;
+  const CAT_COLOR_HEX = window.CAT_COLOR_HEX;
+  const CAT_LABEL = window.CAT_LABEL;
+  const CAT_ORDER = window.CAT_ORDER;
+  const US_ORDER = window.US_ORDER;
+  const BASIN_ORDER = window.BASIN_ORDER;
+  const ENSO_ORDER = window.ENSO_ORDER || ['El Nino', 'La Nina', 'Neutral', 'Unknown'];
+  // Derive default limits dynamically from dataset instead of hardcoded numbers
+  const allData = RAW_US.concat(RAW_BASIN);
+  const years = allData.map((d) => d.year).filter((v) => typeof v === 'number');
+  const winds = allData.map((d) => d.windMph).filter((v) => typeof v === 'number');
+  const pressures = allData.map((d) => d.pressureMb).filter((v) => typeof v === 'number');
+  const lats = allData.map((d) => d.lat).filter((v) => typeof v === 'number');
+  const lons = allData.map((d) => d.lon).filter((v) => typeof v === 'number');
+
+  const defaultLimits = {
+    yrMin: Math.min(...years),
+    yrMax: Math.max(...years),
+    windMin: 0,
+    windMax: Math.ceil(Math.max(...winds) / 5) * 5,
+    presMin: Math.floor(Math.min(...pressures) / 5) * 5,
+    presMax: Math.ceil(Math.max(...pressures) / 5) * 5,
+    latMin: 0,
+    latMax: Math.ceil(Math.max(...lats)),
+    lonMin: Math.floor(Math.min(...lons)),
+    lonMax: Math.ceil(Math.max(...lons)),
+    lfMin: 1,
+    lfMax: 10,
+    fatMin: 0,
+    fatMax: 11000,
+    dmgMin: 0,
+    dmgMax: 125000,
+    dateMin: 1,
+    dateMax: 365,
   };
-  const CAT_LABEL = {
-    0: 'Tropical Storm',
-    1: 'Category 1',
-    2: 'Category 2',
-    3: 'Category 3',
-    4: 'Category 4',
-    5: 'Category 5',
-    EX: 'Extratropical',
-  };
-  const CAT_ORDER = [0, 1, 2, 3, 4, 5];
-  const US_ORDER = [
-    'TX',
-    'LA',
-    'MS',
-    'AL',
-    'FL',
-    'GA',
-    'SC',
-    'NC',
-    'VA',
-    'MD/DE',
-    'NJ',
-    'NY',
-    'CT/RI',
-    'MA',
-    'NH',
-    'ME',
-  ];
-  const BASIN_ORDER = US_ORDER.concat([
-    'Canada',
-    'Bermuda',
-    'Bahamas',
-    'Turks and Caicos',
-    'Cuba',
-    'Cayman Islands',
-    'Jamaica',
-    'Haiti',
-    'Dominican Republic',
-    'Puerto Rico',
-    'Virgin Islands',
-    'Anguilla',
-    'Saint Martin/Sint Maarten',
-    'Saint Barthelemy',
-    'Saint Kitts and Nevis',
-    'Antigua and Barbuda',
-    'Montserrat',
-    'Guadeloupe',
-    'Dominica',
-    'Martinique',
-    'Saint Lucia',
-    'Saint Vincent and the Grenadines',
-    'Barbados',
-    'Grenada',
-    'Trinidad and Tobago',
-    'Venezuela',
-    'Colombia',
-    'Panama',
-    'Costa Rica',
-    'Nicaragua',
-    'Honduras',
-    'Guatemala',
-    'Belize',
-    'El Salvador',
-    'Mexico',
-    'Azores',
-    'Portugal',
-    'Cape Verde',
-  ]);
+
   // state ---------------------------------------------------------------
   let MODE = 'us';
   let RAW = RAW_US;
   let REGION_ORDER = US_ORDER;
   let activeCats = new Set(CAT_ORDER);
   let activeStates = new Set(REGION_ORDER);
-  let yrMin = 1851,
-    yrMax = 2025;
-  let windMin = 0,
-    windMax = 220;
-  let presMin = 880,
-    presMax = 1020;
+  let yrMin = defaultLimits.yrMin,
+    yrMax = defaultLimits.yrMax;
+  let windMin = defaultLimits.windMin,
+    windMax = defaultLimits.windMax;
+  let presMin = defaultLimits.presMin,
+    presMax = defaultLimits.presMax;
   let excludeNoPressure = false;
-  let latMin = 0,
-    latMax = 55;
-  let lonMin = -100,
-    lonMax = 0;
-  let lfMin = 1,
-    lfMax = 10;
-  let fatMin = 0,
-    fatMax = 11000;
-  let dmgMin = 0,
-    dmgMax = 125000; // millions USD
-  let dateMin = 1,
-    dateMax = 365;
-  const ENSO_ORDER = ['El Nino', 'La Nina', 'Neutral', 'Unknown'];
+  let latMin = defaultLimits.latMin,
+    latMax = defaultLimits.latMax;
+  let lonMin = defaultLimits.lonMin,
+    lonMax = defaultLimits.lonMax;
+  let lfMin = defaultLimits.lfMin,
+    lfMax = defaultLimits.lfMax;
+  let fatMin = defaultLimits.fatMin,
+    fatMax = defaultLimits.fatMax;
+  let dmgMin = defaultLimits.dmgMin,
+    dmgMax = defaultLimits.dmgMax; // millions USD
+  let dateMin = defaultLimits.dateMin,
+    dateMax = defaultLimits.dateMax;
   let activeEnso = new Set(ENSO_ORDER);
   let searchTerm = '';
   let onlyDocumented = false;
 
-  // ENSO classification by hurricane-season year (NOAA ONI, 1950–2025). Years
-  // before 1950 aren't reliably classified and are marked "Unknown".
-  const ENSO_BY_YEAR = {
-    1950: 'Neutral',
-    1951: 'El Nino',
-    1952: 'El Nino',
-    1953: 'El Nino',
-    1954: 'La Nina',
-    1955: 'La Nina',
-    1956: 'Neutral',
-    1957: 'El Nino',
-    1958: 'El Nino',
-    1959: 'Neutral',
-    1960: 'Neutral',
-    1961: 'Neutral',
-    1962: 'Neutral',
-    1963: 'El Nino',
-    1964: 'La Nina',
-    1965: 'El Nino',
-    1966: 'Neutral',
-    1967: 'Neutral',
-    1968: 'El Nino',
-    1969: 'El Nino',
-    1970: 'La Nina',
-    1971: 'La Nina',
-    1972: 'El Nino',
-    1973: 'La Nina',
-    1974: 'La Nina',
-    1975: 'La Nina',
-    1976: 'El Nino',
-    1977: 'El Nino',
-    1978: 'Neutral',
-    1979: 'El Nino',
-    1980: 'Neutral',
-    1981: 'Neutral',
-    1982: 'El Nino',
-    1983: 'La Nina',
-    1984: 'La Nina',
-    1985: 'Neutral',
-    1986: 'El Nino',
-    1987: 'El Nino',
-    1988: 'La Nina',
-    1989: 'Neutral',
-    1990: 'Neutral',
-    1991: 'El Nino',
-    1992: 'Neutral',
-    1993: 'Neutral',
-    1994: 'El Nino',
-    1995: 'La Nina',
-    1996: 'Neutral',
-    1997: 'El Nino',
-    1998: 'La Nina',
-    1999: 'La Nina',
-    2000: 'La Nina',
-    2001: 'Neutral',
-    2002: 'El Nino',
-    2003: 'Neutral',
-    2004: 'El Nino',
-    2005: 'La Nina',
-    2006: 'El Nino',
-    2007: 'La Nina',
-    2008: 'La Nina',
-    2009: 'El Nino',
-    2010: 'La Nina',
-    2011: 'La Nina',
-    2012: 'Neutral',
-    2013: 'Neutral',
-    2014: 'El Nino',
-    2015: 'El Nino',
-    2016: 'La Nina',
-    2017: 'La Nina',
-    2018: 'El Nino',
-    2019: 'El Nino',
-    2020: 'La Nina',
-    2021: 'La Nina',
-    2022: 'La Nina',
-    2023: 'El Nino',
-    2024: 'Neutral',
-    2025: 'Neutral',
-  };
-  function ensoFor(year) {
-    return ENSO_BY_YEAR[year] || 'Unknown';
-  }
+  (function readInitialUrlFilters() {
+    const p = new URLSearchParams(window.location.search);
+    if (p.has('mode')) {
+      const m = p.get('mode');
+      if (m === 'basin' || m === 'us') {
+        MODE = m;
+        RAW = MODE === 'basin' ? RAW_BASIN : RAW_US;
+      }
+    }
+    if (p.has('yrMin')) yrMin = parseInt(p.get('yrMin'), 10) || defaultLimits.yrMin;
+    if (p.has('yrMax')) yrMax = parseInt(p.get('yrMax'), 10) || defaultLimits.yrMax;
+    if (p.has('windMin')) windMin = parseInt(p.get('windMin'), 10) || defaultLimits.windMin;
+    if (p.has('windMax')) windMax = parseInt(p.get('windMax'), 10) || defaultLimits.windMax;
+    if (p.has('presMin')) presMin = parseInt(p.get('presMin'), 10) || defaultLimits.presMin;
+    if (p.has('presMax')) presMax = parseInt(p.get('presMax'), 10) || defaultLimits.presMax;
+    if (p.has('latMin')) latMin = parseFloat(p.get('latMin')) || defaultLimits.latMin;
+    if (p.has('latMax')) latMax = parseFloat(p.get('latMax')) || defaultLimits.latMax;
+    if (p.has('lonMin')) lonMin = parseFloat(p.get('lonMin')) || defaultLimits.lonMin;
+    if (p.has('lonMax')) lonMax = parseFloat(p.get('lonMax')) || defaultLimits.lonMax;
+    if (p.has('search')) searchTerm = p.get('search').trim().toLowerCase();
+    if (p.has('documented')) onlyDocumented = p.get('documented') === 'true';
+    if (p.has('uniform')) uniformDotSize = p.get('uniform') === 'true';
+  })();
 
   function updateHeroText() {
     // subtitle is now static — intentionally left as a no-op so mode switches don't overwrite it
@@ -625,7 +522,7 @@ function initApp(RAW_US, RAW_BASIN) {
   dmgMaxInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') dmgMaxInput.blur();
   });
-  const MONTH_ABBR3 = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const MONTH_ABBR3 = window.MONTH_ABBR;
   const DOY_TABLE = [];
   for (let m = 1; m <= 12; m++) {
     for (let d = 1; d <= DAYS_IN_MONTH[m]; d++) {
@@ -774,24 +671,24 @@ function initApp(RAW_US, RAW_BASIN) {
     if (e.key === 'Enter') lonMaxInput.blur();
   });
   document.getElementById('resetRanges').addEventListener('click', () => {
-    yrMin = 1851;
-    yrMax = 2025;
-    windMin = 0;
-    windMax = 220;
-    presMin = 880;
-    presMax = 1020;
-    latMin = 0;
-    latMax = 55;
-    lonMin = -100;
-    lonMax = 0;
-    lfMin = 1;
-    lfMax = 10;
-    fatMin = 0;
-    fatMax = 11000;
-    dmgMin = 0;
-    dmgMax = 125000;
-    dateMin = 1;
-    dateMax = 365;
+    yrMin = defaultLimits.yrMin;
+    yrMax = defaultLimits.yrMax;
+    windMin = defaultLimits.windMin;
+    windMax = defaultLimits.windMax;
+    presMin = defaultLimits.presMin;
+    presMax = defaultLimits.presMax;
+    latMin = defaultLimits.latMin;
+    latMax = defaultLimits.latMax;
+    lonMin = defaultLimits.lonMin;
+    lonMax = defaultLimits.lonMax;
+    lfMin = defaultLimits.lfMin;
+    lfMax = defaultLimits.lfMax;
+    fatMin = defaultLimits.fatMin;
+    fatMax = defaultLimits.fatMax;
+    dmgMin = defaultLimits.dmgMin;
+    dmgMax = defaultLimits.dmgMax;
+    dateMin = defaultLimits.dateMin;
+    dateMax = defaultLimits.dateMax;
     excludeNoPressure = false;
     document.getElementById('excludeNoPressure').checked = false;
     updateYearLabels();
@@ -957,7 +854,44 @@ function initApp(RAW_US, RAW_BASIN) {
     }
     return d.lat != null && d.lon != null;
   }
+  function updateUrlState() {
+    const p = new URLSearchParams(window.location.search);
+    if (MODE !== 'us') p.set('mode', MODE);
+    else p.delete('mode');
+    if (yrMin !== defaultLimits.yrMin) p.set('yrMin', yrMin);
+    else p.delete('yrMin');
+    if (yrMax !== defaultLimits.yrMax) p.set('yrMax', yrMax);
+    else p.delete('yrMax');
+    if (windMin !== defaultLimits.windMin) p.set('windMin', windMin);
+    else p.delete('windMin');
+    if (windMax !== defaultLimits.windMax) p.set('windMax', windMax);
+    else p.delete('windMax');
+    if (presMin !== defaultLimits.presMin) p.set('presMin', presMin);
+    else p.delete('presMin');
+    if (presMax !== defaultLimits.presMax) p.set('presMax', presMax);
+    else p.delete('presMax');
+    if (latMin !== defaultLimits.latMin) p.set('latMin', latMin);
+    else p.delete('latMin');
+    if (latMax !== defaultLimits.latMax) p.set('latMax', latMax);
+    else p.delete('latMax');
+    if (lonMin !== defaultLimits.lonMin) p.set('lonMin', lonMin);
+    else p.delete('lonMin');
+    if (lonMax !== defaultLimits.lonMax) p.set('lonMax', lonMax);
+    else p.delete('lonMax');
+    if (searchTerm) p.set('search', searchTerm);
+    else p.delete('search');
+    if (onlyDocumented) p.set('documented', 'true');
+    else p.delete('documented');
+    if (uniformDotSize) p.set('uniform', 'true');
+    else p.delete('uniform');
+
+    const qs = p.toString();
+    const newUrl = window.location.pathname + (qs ? '?' + qs : '');
+    window.history.replaceState(null, '', newUrl);
+  }
+
   function render() {
+    updateUrlState();
     const filtered = RAW.filter(passesFilters).sort((a, b) => a.windMph - b.windMph); // draw big storms last (on top)
     document.getElementById('shownCount').textContent = filtered.length;
     document.getElementById('totalCount').textContent = RAW.length;
@@ -988,7 +922,7 @@ function initApp(RAW_US, RAW_BASIN) {
       markers.push(marker);
     });
   }
-  const MONTH_ABBR = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const MONTH_ABBR = window.MONTH_ABBR;
   const TZ_OFFSETS = {
     TX: -6,
     LA: -6,
@@ -1478,5 +1412,66 @@ ${timeFmt ? `<div class="cell full"><div class="k">Time</div><div class="v" styl
         showTrack(best);
       }, 150);
     }
+  })();
+
+  // Hide map skeleton loader once initial rendering completes
+  const mapLoader = document.getElementById('mapLoader');
+  if (mapLoader) {
+    mapLoader.classList.add('is-hidden');
+  }
+
+  // Share Filter Link Handler
+  const shareBtn = document.getElementById('shareLinkBtn');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', () => {
+      navigator.clipboard
+        .writeText(window.location.href)
+        .then(() => showToast('Filter link copied to clipboard!'))
+        .catch(() => showToast('Link ready in address bar!'));
+    });
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2600);
+  }
+
+  // WIP Modal Wiring
+  (function initModal() {
+    const modal = document.getElementById('wipModal');
+    if (!modal) return;
+
+    function openModal(title) {
+      document.getElementById('wipModalTitle').textContent = `${title} Section`;
+      document.getElementById('wipModalBodyText').textContent =
+        `The ${title} section is currently under active development. Check back soon for historical datasets and tools!`;
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeModal() {
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+
+    document.querySelectorAll('[data-wip]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        openModal(btn.dataset.wip || 'Section');
+      });
+    });
+
+    document.querySelectorAll('[data-close-modal]').forEach((btn) => {
+      btn.addEventListener('click', closeModal);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+        closeModal();
+      }
+    });
   })();
 }

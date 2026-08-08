@@ -6,22 +6,9 @@ fetch('data/onthisday-data.json')
   .catch((err) => console.error('Error loading onthisday-data.json:', err));
 
 function initOtd(OTD_DATA) {
-  const CAT_COLOR_HEX = { 0: '#3fd0c9', 1: '#f2c14e', 2: '#f0983b', 3: '#e6602f', 4: '#cf2b3e', 5: '#a63aa8' };
-  const CAT_LABEL = { 0: 'TS', 1: 'CAT 1', 2: 'CAT 2', 3: 'CAT 3', 4: 'CAT 4', 5: 'CAT 5' };
-  const MONTH_NAMES = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
+  const catColorHex = window.CAT_COLOR_HEX;
+  const catLabel = window.CAT_SHORT_LABEL;
+  const MONTH_NAMES = window.MONTH_NAMES;
 
   const today = new Date();
   const todayMonth = today.getMonth() + 1,
@@ -45,7 +32,7 @@ function initOtd(OTD_DATA) {
           const roundedWind = Math.round(m.windMph / 5) * 5;
           const mapUrl = `hurricane_landfalls.html?_v=60&year=${m.year}&lat=${m.lat}&lon=${m.lon}`;
           return `<div class="otd-item">
-<div class="otd-cat" style="background:${CAT_COLOR_HEX[m.category]}">${CAT_LABEL[m.category]}</div>
+<div class="otd-cat" style="background:${catColorHex[m.category]}">${catLabel[m.category]}</div>
 <div class="otd-body">
 <div class="otd-name">${m.displayName} &mdash; ${m.statesRaw}</div>
 <div class="otd-meta">${roundedWind} mph at landfall &middot; ${fatLine}</div>
@@ -85,4 +72,46 @@ function initOtd(OTD_DATA) {
   } else {
     renderOtd(matches);
   }
+}
+
+// WIP Modal Wiring
+function initModal() {
+  const modal = document.getElementById('wipModal');
+  if (!modal) return;
+
+  function openModal(title) {
+    document.getElementById('wipModalTitle').textContent = `${title} Section`;
+    document.getElementById('wipModalBodyText').textContent =
+      `The ${title} section is currently under active development. Check back soon for historical datasets and tools!`;
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeModal() {
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  document.querySelectorAll('[data-wip]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal(btn.dataset.wip || 'Section');
+    });
+  });
+
+  document.querySelectorAll('[data-close-modal]').forEach((btn) => {
+    btn.addEventListener('click', closeModal);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+      closeModal();
+    }
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initModal);
+} else {
+  initModal();
 }
