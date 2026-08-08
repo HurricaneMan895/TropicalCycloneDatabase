@@ -66,7 +66,7 @@ function initApp(RAW_US, RAW_BASIN) {
   let RAW = RAW_US;
   let REGION_ORDER = US_ORDER;
   let activeCats = new Set(CAT_ORDER);
-  let activeStates = new Set(REGION_ORDER);
+  let activeStates = null;
   let yrMin = defaultLimits.yrMin,
     yrMax = defaultLimits.yrMax;
   let windMin = defaultLimits.windMin,
@@ -99,19 +99,61 @@ function initApp(RAW_US, RAW_BASIN) {
         RAW = MODE === 'basin' ? RAW_BASIN : RAW_US;
       }
     }
-    if (p.has('yrMin')) yrMin = parseInt(p.get('yrMin'), 10) || defaultLimits.yrMin;
-    if (p.has('yrMax')) yrMax = parseInt(p.get('yrMax'), 10) || defaultLimits.yrMax;
-    if (p.has('windMin')) windMin = parseInt(p.get('windMin'), 10) || defaultLimits.windMin;
-    if (p.has('windMax')) windMax = parseInt(p.get('windMax'), 10) || defaultLimits.windMax;
-    if (p.has('presMin')) presMin = parseInt(p.get('presMin'), 10) || defaultLimits.presMin;
-    if (p.has('presMax')) presMax = parseInt(p.get('presMax'), 10) || defaultLimits.presMax;
-    if (p.has('latMin')) latMin = parseFloat(p.get('latMin')) || defaultLimits.latMin;
-    if (p.has('latMax')) latMax = parseFloat(p.get('latMax')) || defaultLimits.latMax;
-    if (p.has('lonMin')) lonMin = parseFloat(p.get('lonMin')) || defaultLimits.lonMin;
-    if (p.has('lonMax')) lonMax = parseFloat(p.get('lonMax')) || defaultLimits.lonMax;
+
+    function parseNum(str, fallback, isFloat = false) {
+      if (str == null) return fallback;
+      const v = isFloat ? parseFloat(str) : parseInt(str, 10);
+      return isNaN(v) ? fallback : v;
+    }
+
+    yrMin = parseNum(p.get('yrMin'), defaultLimits.yrMin);
+    yrMax = parseNum(p.get('yrMax'), defaultLimits.yrMax);
+    windMin = parseNum(p.get('windMin'), defaultLimits.windMin);
+    windMax = parseNum(p.get('windMax'), defaultLimits.windMax);
+    presMin = parseNum(p.get('presMin'), defaultLimits.presMin);
+    presMax = parseNum(p.get('presMax'), defaultLimits.presMax);
+    if (p.has('noPres')) excludeNoPressure = p.get('noPres') === 'true';
+    latMin = parseNum(p.get('latMin'), defaultLimits.latMin, true);
+    latMax = parseNum(p.get('latMax'), defaultLimits.latMax, true);
+    lonMin = parseNum(p.get('lonMin'), defaultLimits.lonMin, true);
+    lonMax = parseNum(p.get('lonMax'), defaultLimits.lonMax, true);
+    lfMin = parseNum(p.get('lfMin'), defaultLimits.lfMin);
+    lfMax = parseNum(p.get('lfMax'), defaultLimits.lfMax);
+    fatMin = parseNum(p.get('fatMin'), defaultLimits.fatMin);
+    fatMax = parseNum(p.get('fatMax'), defaultLimits.fatMax);
+    dmgMin = parseNum(p.get('dmgMin'), defaultLimits.dmgMin, true);
+    dmgMax = parseNum(p.get('dmgMax'), defaultLimits.dmgMax, true);
+    dateMin = parseNum(p.get('dateMin'), defaultLimits.dateMin);
+    dateMax = parseNum(p.get('dateMax'), defaultLimits.dateMax);
+
     if (p.has('search')) searchTerm = p.get('search').trim().toLowerCase();
     if (p.has('documented')) onlyDocumented = p.get('documented') === 'true';
     if (p.has('uniform')) uniformDotSize = p.get('uniform') === 'true';
+
+    if (p.has('cats')) {
+      const cArr = p
+        .get('cats')
+        .split(',')
+        .map((v) => parseInt(v, 10))
+        .filter((v) => !isNaN(v));
+      if (cArr.length > 0) activeCats = new Set(cArr);
+    }
+    if (p.has('states')) {
+      const sArr = p
+        .get('states')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (sArr.length > 0) activeStates = new Set(sArr);
+    }
+    if (p.has('enso')) {
+      const eArr = p
+        .get('enso')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (eArr.length > 0) activeEnso = new Set(eArr);
+    }
   })();
 
   function updateHeroText() {
@@ -139,7 +181,7 @@ function initApp(RAW_US, RAW_BASIN) {
     catListEl.innerHTML = '';
     CAT_ORDER.forEach((c) => {
       const row = document.createElement('div');
-      row.className = 'cat-row';
+      row.className = 'cat-row' + (activeCats.has(c) ? '' : ' off');
       row.dataset.cat = c;
       row.innerHTML = `<span class="swatch" style="background:${CAT_COLOR_HEX[c]}"></span><span class="lab">${CAT_LABEL[c]}</span><span class="cnt">${catCounts[c]}</span>`;
       row.addEventListener('click', () => {
@@ -171,7 +213,9 @@ function initApp(RAW_US, RAW_BASIN) {
       });
     });
     if (discovered.size) REGION_ORDER = REGION_ORDER.concat([...discovered]);
-    activeStates = new Set(REGION_ORDER);
+    if (!activeStates) {
+      activeStates = new Set(REGION_ORDER);
+    }
     document.getElementById('stateHeader').firstChild.textContent = MODE === 'basin' ? 'Location ' : 'State ';
     const stateCounts = {};
     REGION_ORDER.forEach((s) => (stateCounts[s] = 0));
@@ -184,7 +228,7 @@ function initApp(RAW_US, RAW_BASIN) {
     stateListEl.innerHTML = '';
     REGION_ORDER.forEach((s) => {
       const pill = document.createElement('div');
-      pill.className = 'state-pill';
+      pill.className = 'state-pill' + (activeStates.has(s) ? '' : ' off');
       pill.dataset.state = s;
       pill.title = `${stateCounts[s]} landfall${stateCounts[s] === 1 ? '' : 's'}`;
       pill.innerHTML = `${s} <span class="cnt" style="opacity:.6">${stateCounts[s]}</span>`;
@@ -222,7 +266,7 @@ function initApp(RAW_US, RAW_BASIN) {
     ensoListEl.innerHTML = '';
     ENSO_ORDER.forEach((e) => {
       const pill = document.createElement('div');
-      pill.className = 'state-pill';
+      pill.className = 'state-pill' + (activeEnso.has(e) ? '' : ' off');
       pill.title = `${ensoCounts[e]} landfall${ensoCounts[e] === 1 ? '' : 's'}`;
       pill.innerHTML = `${e} <span class="cnt" style="opacity:.6">${ensoCounts[e]}</span>`;
       pill.addEventListener('click', () => {
@@ -251,6 +295,7 @@ function initApp(RAW_US, RAW_BASIN) {
     if (newMode === MODE) return;
     MODE = newMode;
     RAW = MODE === 'basin' ? RAW_BASIN : RAW_US;
+    activeStates = null;
     document.querySelectorAll('.mode-btn').forEach((b) => b.classList.toggle('active', b.dataset.mode === MODE));
     clearTrack();
     buildStatStrip();
@@ -670,6 +715,36 @@ function initApp(RAW_US, RAW_BASIN) {
   lonMaxInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') lonMaxInput.blur();
   });
+  function syncAllControls() {
+    document.querySelectorAll('.mode-btn').forEach((b) => {
+      b.classList.toggle('active', b.dataset.mode === MODE);
+    });
+
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.value = searchTerm;
+
+    const docCb = document.getElementById('onlyDocumented');
+    if (docCb) docCb.checked = onlyDocumented;
+
+    const uniCb = document.getElementById('uniformSizeToggle');
+    if (uniCb) uniCb.checked = uniformDotSize;
+
+    const noPresCb = document.getElementById('excludeNoPressure');
+    if (noPresCb) noPresCb.checked = excludeNoPressure;
+
+    updateYearLabels();
+    updateWindLabels();
+    updatePresLabels();
+    updateLatLabels();
+    updateLonLabels();
+    updateLfLabels();
+    updateFatLabels();
+    updateDmgLabels();
+    updateDateLabels();
+
+    updateSearchPillHighlight();
+  }
+
   document.getElementById('resetRanges').addEventListener('click', () => {
     yrMin = defaultLimits.yrMin;
     yrMax = defaultLimits.yrMax;
@@ -690,22 +765,13 @@ function initApp(RAW_US, RAW_BASIN) {
     dateMin = defaultLimits.dateMin;
     dateMax = defaultLimits.dateMax;
     excludeNoPressure = false;
-    document.getElementById('excludeNoPressure').checked = false;
-    updateYearLabels();
-    updateWindLabels();
-    updatePresLabels();
-    updateLatLabels();
-    updateLonLabels();
-    updateLfLabels();
-    updateFatLabels();
-    updateDmgLabels();
-    updateMonthLabels();
+    syncAllControls();
     render();
   });
   // ---- Leaflet basemap setup ----
   const map = L.map('leafletMap', {
-    center: [28.5, -83.0],
-    zoom: 6,
+    center: MODE === 'basin' ? [21, -62] : [28.5, -83.0],
+    zoom: MODE === 'basin' ? 4 : 6,
     minZoom: 3,
     maxZoom: 12,
     worldCopyJump: false,
@@ -858,32 +924,79 @@ function initApp(RAW_US, RAW_BASIN) {
     const p = new URLSearchParams(window.location.search);
     if (MODE !== 'us') p.set('mode', MODE);
     else p.delete('mode');
+
     if (yrMin !== defaultLimits.yrMin) p.set('yrMin', yrMin);
     else p.delete('yrMin');
     if (yrMax !== defaultLimits.yrMax) p.set('yrMax', yrMax);
     else p.delete('yrMax');
+
     if (windMin !== defaultLimits.windMin) p.set('windMin', windMin);
     else p.delete('windMin');
     if (windMax !== defaultLimits.windMax) p.set('windMax', windMax);
     else p.delete('windMax');
+
     if (presMin !== defaultLimits.presMin) p.set('presMin', presMin);
     else p.delete('presMin');
     if (presMax !== defaultLimits.presMax) p.set('presMax', presMax);
     else p.delete('presMax');
+
+    if (excludeNoPressure) p.set('noPres', 'true');
+    else p.delete('noPres');
+
     if (latMin !== defaultLimits.latMin) p.set('latMin', latMin);
     else p.delete('latMin');
     if (latMax !== defaultLimits.latMax) p.set('latMax', latMax);
     else p.delete('latMax');
+
     if (lonMin !== defaultLimits.lonMin) p.set('lonMin', lonMin);
     else p.delete('lonMin');
     if (lonMax !== defaultLimits.lonMax) p.set('lonMax', lonMax);
     else p.delete('lonMax');
+
+    if (lfMin !== defaultLimits.lfMin) p.set('lfMin', lfMin);
+    else p.delete('lfMin');
+    if (lfMax !== defaultLimits.lfMax) p.set('lfMax', lfMax);
+    else p.delete('lfMax');
+
+    if (fatMin !== defaultLimits.fatMin) p.set('fatMin', fatMin);
+    else p.delete('fatMin');
+    if (fatMax !== defaultLimits.fatMax) p.set('fatMax', fatMax);
+    else p.delete('fatMax');
+
+    if (dmgMin !== defaultLimits.dmgMin) p.set('dmgMin', dmgMin);
+    else p.delete('dmgMin');
+    if (dmgMax !== defaultLimits.dmgMax) p.set('dmgMax', dmgMax);
+    else p.delete('dmgMax');
+
+    if (dateMin !== defaultLimits.dateMin) p.set('dateMin', dateMin);
+    else p.delete('dateMin');
+    if (dateMax !== defaultLimits.dateMax) p.set('dateMax', dateMax);
+    else p.delete('dateMax');
+
     if (searchTerm) p.set('search', searchTerm);
     else p.delete('search');
     if (onlyDocumented) p.set('documented', 'true');
     else p.delete('documented');
     if (uniformDotSize) p.set('uniform', 'true');
     else p.delete('uniform');
+
+    if (activeCats.size !== CAT_ORDER.length) {
+      p.set('cats', Array.from(activeCats).sort().join(','));
+    } else {
+      p.delete('cats');
+    }
+
+    if (activeStates && activeStates.size !== REGION_ORDER.length) {
+      p.set('states', Array.from(activeStates).join(','));
+    } else {
+      p.delete('states');
+    }
+
+    if (activeEnso.size !== ENSO_ORDER.length) {
+      p.set('enso', Array.from(activeEnso).join(','));
+    } else {
+      p.delete('enso');
+    }
 
     const qs = p.toString();
     const newUrl = window.location.pathname + (qs ? '?' + qs : '');
@@ -1366,7 +1479,7 @@ ${timeFmt ? `<div class="cell full"><div class="k">Time</div><div class="v" styl
     coordReadout.classList.remove('show');
   });
 
-  updateYearLabels();
+  syncAllControls();
   render();
 
   // deep-link support: ?year=YYYY&lat=XX.XXXX&lon=-XX.XXXX jumps straight to that landfall
