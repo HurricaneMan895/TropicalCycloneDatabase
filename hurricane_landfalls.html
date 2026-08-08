@@ -2,7 +2,25 @@
 <html lang="en-US">
   <head>
     <meta charset="UTF-8" />
-    <title>Every Atlantic Hurricane, Plotted</title>
+    <title>Every Atlantic Hurricane, Plotted — Tropical Cyclone Database</title>
+    <meta
+      name="description"
+      content="Interactive map plotting every U.S. and Atlantic basin hurricane landfall on record from 1851 to 2025 with complete track visualization."
+    />
+    <meta property="og:title" content="Every Atlantic Hurricane, Plotted — Tropical Cyclone Database" />
+    <meta
+      property="og:description"
+      content="Explore nearly 175 years of Atlantic hurricane landfalls with interactive filters for category, wind speed, pressure, ENSO phase, and location."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="assets/images/hero_map.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Every Atlantic Hurricane, Plotted" />
+    <meta
+      name="twitter:description"
+      content="Interactive database tracing every single U.S. and Atlantic hurricane landfall on record."
+    />
+    <meta name="twitter:image" content="assets/images/hero_map.png" />
     <link rel="icon" type="image/png" href="assets/images/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
@@ -11,14 +29,16 @@
     <link rel="stylesheet" href="css/hurricane_landfalls.css" />
   </head>
   <body>
-    <nav class="topnav">
+    <nav class="topnav" aria-label="Main Navigation">
       <div class="topnav-inner">
-        <div class="topnav-brand"><img src="assets/images/logo.png" alt="logo" />TROPICAL CYCLONE DATABASE</div>
+        <div class="topnav-brand">
+          <img src="assets/images/logo.png" alt="Tropical Cyclone Database Logo" />TROPICAL CYCLONE DATABASE
+        </div>
         <div class="topnav-links">
-          <a href="home.html" class="topnav-link">Home</a>
-          <a href="#" class="topnav-link">About</a>
-          <a href="#" class="topnav-link">Data</a>
-          <a href="#" class="topnav-link">Contact</a>
+          <a href="index.html" class="topnav-link">Home</a>
+          <a href="#" class="topnav-link" data-wip="About">About</a>
+          <a href="#" class="topnav-link" data-wip="Data">Data</a>
+          <a href="#" class="topnav-link" data-wip="Contact">Contact</a>
         </div>
       </div>
     </nav>
@@ -239,18 +259,40 @@
             record and are shown as such rather than guessed.
           </div>
         </aside>
-        <main class="panel map-panel">
+        <main class="panel map-panel" role="region" aria-label="Interactive Atlantic Hurricane Map">
           <div class="map-head">
-            <button class="sidebar-toggle-btn" id="sidebarToggleBtn" title="Collapse filter panel">
+            <button
+              class="sidebar-toggle-btn"
+              id="sidebarToggleBtn"
+              title="Collapse filter panel"
+              aria-expanded="true"
+              aria-controls="controls"
+            >
               &#9664; Filters
             </button>
-            <div class="cnt-label">Showing <b id="shownCount">773</b> of <b id="totalCount">773</b> landfalls</div>
+            <div class="cnt-label" role="status" aria-live="polite">
+              Showing <b id="shownCount">...</b> of <b id="totalCount">...</b> landfalls
+            </div>
+            <button
+              class="share-btn"
+              id="shareLinkBtn"
+              title="Copy URL with current filter settings"
+              aria-label="Copy filter link"
+            >
+              &#128279; Share View
+            </button>
             <div class="cnt-label" id="hintLabel">scroll to zoom &middot; drag to pan</div>
             <label class="cnt-label toggle-row" id="sameYearToggleWrap" style="display: none">
               <input type="checkbox" id="sameYearToggle" /> Show other landfalls from this year
             </label>
           </div>
           <div id="mapholder">
+            <div id="mapLoader" class="map-loader" role="status" aria-live="polite">
+              <div class="map-loader__spinner"></div>
+              <div class="map-loader__text" id="mapLoaderText">
+                Downloading Atlantic hurricane database (1851&ndash;2025)&hellip;
+              </div>
+            </div>
             <div id="leafletMap"></div>
             <div id="coordReadout">--.----&deg;, ---.----&deg;</div>
           </div>
@@ -268,6 +310,33 @@
       </footer>
     </div>
     <div id="card"></div>
+    <div id="toast" class="tc-toast" aria-live="polite"></div>
+
+    <!-- WIP Modal -->
+    <div id="wipModal" class="tc-modal" aria-hidden="true" role="dialog" aria-labelledby="wipModalTitle">
+      <div class="tc-modal__overlay" data-close-modal></div>
+      <div class="tc-modal__content">
+        <div class="tc-modal__header">
+          <h3 id="wipModalTitle" class="tc-modal__title">Section Under Construction</h3>
+          <button class="tc-modal__close" data-close-modal aria-label="Close dialog">&times;</button>
+        </div>
+        <div class="tc-modal__body">
+          <p id="wipModalBodyText">
+            This section is currently under active development as part of the Tropical Cyclone Database expansion
+            project.
+          </p>
+          <p class="tc-modal__subtext">
+            Data for this project is sourced from official NOAA/AOML HURDAT2 database records (1851–2025) and NHC
+            Tropical Cyclone Reports.
+          </p>
+        </div>
+        <div class="tc-modal__footer">
+          <button class="tc-modal__btn" data-close-modal>Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/constants.js"></script>
     <script src="js/hurricane_landfalls.js"></script>
   </body>
 </html>

@@ -805,3 +805,191 @@ footer a {
   background: var(--c-ts);
   color: #08131c;
 }
+
+/* Share View Button */
+.share-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(63, 208, 201, 0.1);
+  border: 1px solid var(--accent-line);
+  color: var(--c-ts);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.15s;
+}
+.share-btn:hover {
+  background: rgba(63, 208, 201, 0.22);
+  border-color: var(--c-ts);
+}
+
+/* Map Skeleton Loader Overlay */
+.map-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  background: radial-gradient(ellipse at 50% 40%, #0e1d2c 0%, #060c14 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  opacity: 1;
+  transition: opacity 0.35s ease;
+}
+.map-loader.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.map-loader__spinner {
+  width: 42px;
+  height: 42px;
+  border: 3px solid rgba(63, 208, 201, 0.2);
+  border-top-color: var(--c-ts);
+  border-radius: 50%;
+  animation: tcSpin 0.9s linear infinite;
+}
+@keyframes tcSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.map-loader__text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+}
+
+/* Toast Message */
+.tc-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  z-index: 10001;
+  background: var(--bg-panel-2);
+  border: 1px solid var(--c-ts);
+  color: var(--text-main);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 10px 18px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+.tc-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Modal Component */
+.tc-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
+}
+.tc-modal.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+.tc-modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 9, 15, 0.78);
+  backdrop-filter: blur(4px);
+}
+.tc-modal__content {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-panel-2) 100%);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  padding: 24px;
+  z-index: 1;
+  transform: translateY(12px) scale(0.96);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.tc-modal.is-open .tc-modal__content {
+  transform: translateY(0) scale(1);
+}
+.tc-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.tc-modal__title {
+  font-family: 'Archivo Expanded', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-main);
+}
+.tc-modal__close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+}
+.tc-modal__close:hover {
+  color: var(--text-main);
+}
+.tc-modal__body {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+}
+.tc-modal__subtext {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-top: 10px;
+}
+.tc-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+}
+.tc-modal__btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #08131c;
+  background: var(--c-ts);
+  border: none;
+  border-radius: 7px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.tc-modal__btn:hover {
+  opacity: 0.9;
+}

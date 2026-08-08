@@ -335,3 +335,100 @@ footer a {
   background: var(--c-ts);
   color: #08131c;
 }
+
+/* Modal Component */
+.tc-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
+}
+.tc-modal.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+.tc-modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 9, 15, 0.78);
+  backdrop-filter: blur(4px);
+}
+.tc-modal__content {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-panel-2) 100%);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  padding: 24px;
+  z-index: 1;
+  transform: translateY(12px) scale(0.96);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.tc-modal.is-open .tc-modal__content {
+  transform: translateY(0) scale(1);
+}
+.tc-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.tc-modal__title {
+  font-family: 'Archivo Expanded', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-main);
+}
+.tc-modal__close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+}
+.tc-modal__close:hover {
+  color: var(--text-main);
+}
+.tc-modal__body {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+}
+.tc-modal__subtext {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-top: 10px;
+}
+.tc-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+}
+.tc-modal__btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #08131c;
+  background: var(--c-ts);
+  border: none;
+  border-radius: 7px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.tc-modal__btn:hover {
+  opacity: 0.9;
+}

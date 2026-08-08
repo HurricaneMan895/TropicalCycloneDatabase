@@ -2,20 +2,37 @@
 <html lang="en-US">
   <head>
     <meta charset="UTF-8" />
-    <title>Tropical Cyclone Database</title>
+    <title>Tropical Cyclone Database — 174 Years of Atlantic Hurricane History</title>
+    <meta
+      name="description"
+      content="A comprehensive interactive reference tracing every Atlantic hurricane landfall on record from 1851 to 2025."
+    />
+    <meta property="og:title" content="Tropical Cyclone Database — 174 Years of Atlantic Hurricane History" />
+    <meta
+      property="og:description"
+      content="A hand-built reference tracing every Atlantic hurricane landfall on record, filterable by category, location, ENSO phase, wind, and pressure."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="assets/images/hero_map.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Tropical Cyclone Database" />
+    <meta name="twitter:description" content="Explore 174 years of Atlantic hurricane landfalls and historical data." />
+    <meta name="twitter:image" content="assets/images/hero_map.png" />
     <link rel="icon" type="image/png" href="assets/images/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="css/index.css" />
   </head>
   <body>
-    <nav class="topnav">
+    <nav class="topnav" aria-label="Main Navigation">
       <div class="topnav-inner">
-        <div class="topnav-brand"><img src="assets/images/logo.png" alt="logo" />TROPICAL CYCLONE DATABASE</div>
+        <div class="topnav-brand">
+          <img src="assets/images/logo.png" alt="Tropical Cyclone Database Logo" />TROPICAL CYCLONE DATABASE
+        </div>
         <div class="topnav-links">
-          <a href="home.html" class="topnav-link active">Home</a>
-          <a href="#" class="topnav-link">About</a>
-          <a href="#" class="topnav-link">Data</a>
-          <a href="#" class="topnav-link">Contact</a>
+          <a href="index.html" class="topnav-link active" aria-current="page">Home</a>
+          <a href="#" class="topnav-link" data-wip="About">About</a>
+          <a href="#" class="topnav-link" data-wip="Data">Data</a>
+          <a href="#" class="topnav-link" data-wip="Contact">Contact</a>
         </div>
       </div>
     </nav>
@@ -80,6 +97,32 @@
         official reports for research or citation use.
       </footer>
     </div>
+
+    <!-- WIP Modal -->
+    <div id="wipModal" class="tc-modal" aria-hidden="true" role="dialog" aria-labelledby="wipModalTitle">
+      <div class="tc-modal__overlay" data-close-modal></div>
+      <div class="tc-modal__content">
+        <div class="tc-modal__header">
+          <h3 id="wipModalTitle" class="tc-modal__title">Section Under Construction</h3>
+          <button class="tc-modal__close" data-close-modal aria-label="Close dialog">&times;</button>
+        </div>
+        <div class="tc-modal__body">
+          <p id="wipModalBodyText">
+            This section is currently under active development as part of the Tropical Cyclone Database expansion
+            project.
+          </p>
+          <p class="tc-modal__subtext">
+            Data for this project is sourced from official NOAA/AOML HURDAT2 database records (1851–2025) and NHC
+            Tropical Cyclone Reports.
+          </p>
+        </div>
+        <div class="tc-modal__footer">
+          <button class="tc-modal__btn" data-close-modal>Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/constants.js"></script>
     <script src="js/index.js"></script>
   </body>
 </html>
