@@ -89,6 +89,7 @@ function initApp(RAW_US, RAW_BASIN) {
   let activeEnso = new Set(ENSO_ORDER);
   let searchTerm = '';
   let onlyDocumented = false;
+  let uniformDotSize = false;
 
   (function readInitialUrlFilters() {
     const p = new URLSearchParams(window.location.search);
@@ -745,6 +746,9 @@ function initApp(RAW_US, RAW_BASIN) {
     updateSearchPillHighlight();
   }
 
+  // Sync controls UI with initial URL / state parameters
+  syncAllControls();
+
   document.getElementById('resetRanges').addEventListener('click', () => {
     yrMin = defaultLimits.yrMin;
     yrMax = defaultLimits.yrMax;
@@ -889,7 +893,6 @@ function initApp(RAW_US, RAW_BASIN) {
   const trackLayer = L.layerGroup().addTo(map);
   const windExtent = d3.extent(RAW, (d) => d.windMph);
   const rScale = d3.scaleSqrt().domain(windExtent).range([3, 13]);
-  let uniformDotSize = false;
   const UNIFORM_RADIUS = 7;
   function getDotRadius(windMph) {
     return uniformDotSize ? UNIFORM_RADIUS : rScale(windMph);
