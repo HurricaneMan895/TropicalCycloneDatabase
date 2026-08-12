@@ -322,12 +322,16 @@ renderOtd(matches);
 renderOtd(matches);
 }
 
-// Did You Know? — rotates once per day, deterministically, based on the UTC date
-// so every visitor sees the same fact on a given day, and it changes at midnight UTC.
+// Did You Know? — rotates once per day, deterministically, based on each visitor's own
+// local calendar date, so it reliably changes once every 24 hours for them (rather than
+// at midnight UTC, which for most US visitors falls mid-afternoon local time and can look
+// like it "didn't update" if checked earlier in the day).
 (function(){
 const DYK_FACTS = JSON.parse(document.getElementById('dyk-data').textContent);
-const daysSinceEpoch = Math.floor(Date.now() / 86400000);
-const idx = daysSinceEpoch % DYK_FACTS.length;
+const now = new Date();
+const localMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+const daysSinceEpoch = Math.floor(localMidnight.getTime() / 86400000);
+const idx = ((daysSinceEpoch % DYK_FACTS.length) + DYK_FACTS.length) % DYK_FACTS.length;
 document.getElementById('dykFact').textContent = DYK_FACTS[idx];
 })();
 </script>
