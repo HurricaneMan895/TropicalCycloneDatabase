@@ -1,0 +1,38 @@
+/* ==========================================
+   TROPICAL CYCLONE DATABASE - COLOR SCHEME & VARIABLES
+   ========================================== */
+
+:root {
+  /* Dark Mode Palette */
+  --bg-primary: #08131c;
+  --bg-panel: #0d1e2b;
+  --bg-panel-2: #122637;
+  --bg-panel-hover: #172f44;
+  --border-soft: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(63, 208, 201, 0.5);
+
+  /* Typography Colors */
+  --text-main: #e6eff7;
+  --text-dim: #8fa3b8;
+  --text-faint: #4f6375;
+
+  /* Brand / Accent Colors */
+  --c-ts: #3fd0c9;
+  --c-ts-glow: rgba(63, 208, 201, 0.2);
+
+  /* Hurricane Category Colors */
+  --cat-0: #3fd0c9;
+  --cat-1: #f2c14e;
+  --cat-2: #f0983b;
+  --cat-3: #e6602f;
+  --cat-4: #cf2b3e;
+  --cat-5: #a63aa8;
+
+  /* Z-Index Scale */
+  --z-base: 1;
+  --z-sticky: 100;
+  --z-dropdown: 500;
+  --z-nav: 1000;
+  --z-modal: 2000;
+  --z-tooltip: 3000;
+}
