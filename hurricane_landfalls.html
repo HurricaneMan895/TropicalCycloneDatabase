@@ -27,6 +27,8 @@
 --c-4:#cf2b3e;
 --c-5:#a63aa8;
 --accent-line: rgba(63,208,201,0.35);
+--nav-h: 58px;
+--panel-w: 250px;
 }
 *{ box-sizing:border-box; }
 html,body{
@@ -40,6 +42,7 @@ background-attachment: fixed, fixed;
 color: var(--text-main);
 font-family:'Archivo', system-ui, sans-serif;
 min-height:100vh;
+overflow:hidden;
 }
 @media (max-width: 900px){
 html,body{ background-attachment: scroll, scroll; }
@@ -94,10 +97,7 @@ padding:4px 0; border-bottom:2px solid transparent; transition: all .15s;
 }
 .wrap{ max-width:1600px; margin:0 auto; padding: 28px 40px 60px; }
 header.hero{
-display:flex; flex-direction:column; gap:6px;
-padding: 6px 4px 22px;
-border-bottom: 1px solid var(--border-soft);
-margin-bottom: 22px;
+display:none;
 }
 .eyebrow{
 font-family:'Roboto', sans-serif; font-weight:600;
@@ -163,25 +163,20 @@ margin: 18px 0 4px;
 .stat .l{ font-family:Arial, sans-serif; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#ffffff; margin-top:2px;}
 /* layout */
 .layout{
-display:grid;
-grid-template-columns: 250px 1fr;
-gap:20px;
-margin-top:22px;
-align-items:start;
-transition: grid-template-columns .25s ease;
-}
-.layout.sidebar-collapsed{
-grid-template-columns: 0px 1fr;
-gap:0;
+position:fixed; top:var(--nav-h); left:0; right:0; bottom:0;
+margin:0;
 }
 #controls{
-overflow:hidden;
-transition: padding .25s ease, opacity .2s ease;
-min-width:250px;
+overflow-y:auto;
+position:absolute; top:0; left:0; bottom:0;
+width:290px; z-index:20;
+box-shadow: 4px 0 24px rgba(0,0,0,0.45);
+scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.14) transparent;
 }
-.layout.sidebar-collapsed #controls{
-padding:0; border:none; opacity:0; pointer-events:none; min-width:0;
-}
+#controls::-webkit-scrollbar{ width:8px; }
+#controls::-webkit-scrollbar-track{ background: transparent; }
+#controls::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.14); border-radius:4px; }
+#controls::-webkit-scrollbar-thumb:hover{ background: rgba(255,255,255,0.24); }
 .sidebar-toggle-btn{
 display:flex; align-items:center; gap:6px;
 background:none; border:1px solid var(--border-soft); color:var(--text-dim);
@@ -189,11 +184,6 @@ font-family:'Roboto', sans-serif; font-weight:600; font-size:11px; letter-spacin
 padding:5px 10px; border-radius:6px; cursor:pointer; text-transform:uppercase;
 }
 .sidebar-toggle-btn:hover{ color:var(--text-main); border-color:var(--text-dim); }
-@media (max-width: 880px){
-.layout{ grid-template-columns: 1fr; }
-.layout.sidebar-collapsed{ grid-template-columns: 1fr; }
-.layout.sidebar-collapsed #controls{ display:none; }
-}
 .panel{
 background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-panel-2) 100%);
 border:1px solid var(--border-soft);
@@ -239,7 +229,6 @@ padding:3px 7px; border-radius:5px; cursor:pointer; text-transform:uppercase;
 #mapHeadToggles{
 flex-basis:100%;
 display:flex; flex-wrap:wrap; gap:4px 16px;
-margin-top:2px; padding-top:8px; border-top:1px solid var(--border-soft);
 }
 #mapHeadToggles .toggle-row{ padding:2px 0; font-size:11.5px; }
 #mapHeadToggles .toggle-row label{ gap:5px; }
@@ -258,6 +247,7 @@ transition: background .15s;
 .cat-row.off .lab{ color:var(--text-faint); }
 .divider{ height:1px; background:var(--border-soft); margin:14px 0; }
 .mode-toggle{ display:flex; gap:6px; }
+.scope-note{ margin-top:8px; font-size:11px; color:var(--text-faint); line-height:1.4; opacity:0.85; overflow-wrap:break-word; }
 .mode-btn{
 flex:1; font-family:'Archivo',sans-serif; font-size:12px; font-weight:600;
 padding:8px 6px; border-radius:8px; cursor:pointer; text-align:center;
@@ -333,43 +323,141 @@ font-family:'Archivo',sans-serif; font-size:13px; margin-bottom: 20px;
 .note{ font-size:11px; color:var(--text-faint); line-height:1.5; margin-top:14px; }
 .note b{ color:var(--text-dim); }
 /* map area */
-.map-panel{ position:sticky; top:20px; padding:0; overflow:hidden; align-self:start; }
-@media (max-width: 880px){
-.map-panel{ position:static; }
-}
+.map-panel{ position:absolute; inset:0; padding:0; overflow:hidden; z-index:1; border-radius:0; }
 .map-panel .map-head{
-display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px 16px;
-padding:14px 18px; border-bottom:1px solid var(--border-soft);
+display:none;
 }
 .map-head .cnt-label{ font-family:'Roboto', sans-serif; font-weight:600; font-size:12px; color:var(--text-dim); }
 .map-head .cnt-label b{ color:var(--text-main); font-size:14px; }
 .map-head label.toggle-row{ display:flex; align-items:center; gap:6px; cursor:pointer; padding:0; }
 .map-head label.toggle-row input{ accent-color: var(--c-ts); cursor:pointer; }
-#mapholder{ position:relative; width:100%; height:min(640px, calc(100vh - 130px)); min-height:380px; }
+#mapholder{ position:absolute; inset:0; width:auto; height:auto; min-height:0; }
 #coordReadout{
-position:absolute; top:10px; right:10px; z-index:900; pointer-events:none;
+position:absolute; top:10px; right:calc(var(--panel-w) + 10px); z-index:900; pointer-events:none;
 background:rgba(6,12,20,0.78); color:var(--text-dim); border:1px solid var(--border-soft);
 border-radius:6px; padding:4px 9px; font-family:'Roboto', sans-serif; font-weight:600; font-size:11px;
-letter-spacing:.01em; opacity:0; transition:opacity .15s;
+letter-spacing:.01em; opacity:0; transition:opacity .15s, right .25s ease;
 }
 #coordReadout.show{ opacity:1; }
 #zoomSliderWrap{
-position:absolute; right:12px; top:56px; z-index:900;
+position:absolute; right:calc(var(--panel-w) + 12px); top:56px; z-index:900;
 display:flex; flex-direction:column; align-items:center; gap:8px;
 background:rgba(12,24,38,0.85); border:1px solid var(--border-soft);
 border-radius:0; padding:9px 8px; backdrop-filter: blur(3px);
+transition: right .25s ease;
 }
 .zoom-slider-btn:disabled{ opacity:.5; cursor:wait; }
+#matchingLandfallsPanel{
+position:absolute; top:0; right:0; bottom:0;
+width:var(--panel-w); z-index:20; overflow-y:auto;
+box-shadow: -4px 0 24px rgba(0,0,0,0.45);
+transition: transform .25s ease, opacity .2s ease;
+scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.14) transparent;
+}
+#matchingLandfallsPanel::-webkit-scrollbar{ width:8px; }
+#matchingLandfallsPanel::-webkit-scrollbar-track{ background: transparent; }
+#matchingLandfallsPanel::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.14); border-radius:4px; }
+#matchingLandfallsPanel::-webkit-scrollbar-thumb:hover{ background: rgba(255,255,255,0.24); }
+.layout.landfalls-collapsed #matchingLandfallsPanel{
+transform: translateX(120%); opacity:0; pointer-events:none;
+}
+.panel-collapse-btn{
+position:absolute; top:16px; z-index:21;
+display:flex; align-items:center; justify-content:center; width:26px; height:34px;
+background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-panel-2) 100%);
+border:1.5px solid #000000; color:var(--text-dim); border-radius:7px; cursor:pointer;
+font-size:11px; transition: all .15s, right .25s ease;
+box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+}
+.panel-collapse-btn:hover{ border-color:var(--c-ts); color:var(--c-ts); }
+#landfallsToggleBtn{ right:calc(var(--panel-w) - 8px); }
+.layout.landfalls-collapsed #landfallsToggleBtn{ right:0; }
+.landfalls-list-head{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.landfalls-list-title{ font-family:'Archivo Expanded',sans-serif; font-weight:800; font-size:15px; flex:1; min-width:0; }
+.landfalls-list-count{ font-family:'Roboto',sans-serif; font-weight:600; font-size:12px; color:var(--text-faint); flex-shrink:0; }
+.landfall-card{ display:flex; align-items:center; gap:10px; padding:9px 2px; cursor:pointer; border-bottom:1px solid var(--border-soft); transition: background .12s; }
+.landfall-card:last-child{ border-bottom:none; }
+.landfall-card:hover{ background:rgba(255,255,255,0.05); }
+.landfall-card.active{ background:rgba(63,208,201,0.14); }
+.landfall-card-icon{
+width:30px; height:30px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+font-family:'Roboto',sans-serif; font-weight:700; font-size:8.5px; color:#08111a; text-align:center; line-height:1.05;
+}
+.landfall-card-body{ flex:1; min-width:0; }
+.landfall-card-name{ font-family:'Archivo Expanded',sans-serif; font-weight:700; font-size:11.5px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.landfall-card-meta{ font-family:'Roboto',sans-serif; font-size:9.8px; color:var(--text-faint); margin-top:1px; }
+.landfalls-empty{ font-family:'Roboto',sans-serif; font-size:12.5px; color:var(--text-faint); padding:14px 2px; }
+.landfall-detail-card{ padding:14px 2px 20px; }
+.landfall-detail-head{ display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+.landfall-detail-icon{
+width:38px; height:38px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+font-family:'Roboto',sans-serif; font-weight:700; font-size:9.5px; color:#08111a; text-align:center; line-height:1.05;
+}
+.landfall-detail-name{ font-family:'Archivo Expanded',sans-serif; font-weight:800; font-size:14px; color:var(--text-main); }
+.landfall-detail-sub{ font-family:'Roboto',sans-serif; font-weight:500; font-size:10.5px; color:var(--text-faint); margin-top:2px; }
+.landfall-detail-grid{ display:flex; flex-direction:column; }
+.landfall-detail-row{
+display:flex; justify-content:space-between; align-items:baseline; gap:14px;
+font-family:'Roboto',sans-serif; font-size:11px;
+padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.landfall-detail-row:last-child{ border-bottom:none; }
+.landfall-detail-row .k{ color:var(--text-faint); letter-spacing:.03em; text-transform:uppercase; font-size:10px; font-weight:600; }
+.landfall-detail-row .v{ color:var(--text-main); font-weight:700; text-align:right; font-size:12px; }
+.landfall-detail-back-btn{
+display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
+background:none; border:1px solid var(--border-soft); color:var(--text-dim);
+font-family:'Roboto', sans-serif; font-weight:600; font-size:11px; letter-spacing:.05em; text-transform:uppercase;
+padding:9px 12px; border-radius:7px; cursor:pointer; margin-top:4px;
+}
+.landfall-detail-back-btn:hover{ color:var(--text-main); border-color:var(--text-dim); }
+.landfalls-more-hint{ font-family:'Roboto',sans-serif; font-size:11px; color:var(--text-faint); padding:10px 2px 2px; text-align:center; }
+.panel-icon-row{ display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+.panel-icon-btn{
+display:flex; align-items:center; justify-content:center; width:34px; height:34px;
+background:none; border:1px solid var(--border-soft); color:var(--text-dim);
+border-radius:7px; cursor:pointer; position:relative; flex-shrink:0;
+}
+.panel-icon-btn:hover{ color:var(--text-main); border-color:var(--text-dim); }
+.panel-icon-btn.active{ background:var(--c-ts); border-color:var(--c-ts); color:#08131c; }
+.my-map-count-badge{
+position:absolute; top:-6px; right:-6px; min-width:15px; height:15px; padding:0 3px;
+background:var(--c-4); color:#fff; border-radius:8px; border:1.5px solid var(--bg-panel);
+font-family:'Roboto', sans-serif; font-weight:800; font-size:9.5px; line-height:1;
+display:flex; align-items:center; justify-content:center;
+}
+.tracks-toggle-label{
+display:flex; align-items:center; gap:7px; cursor:pointer;
+font-size:12.5px; color:var(--text-dim); font-family:'Roboto', sans-serif; font-weight:600;
+}
+.panel-icon-row-toggle{ flex:1; min-width:0; justify-content:flex-end; white-space:nowrap; }
+.panel-icon-row-toggle input{ accent-color: var(--c-1); }
+.panel-head-row{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.panel-head-title{ font-family:'Archivo Expanded',sans-serif; font-weight:800; font-size:16px; flex:1; min-width:0; }
+.my-map-add-btn{
+display:flex; align-items:center; justify-content:center; flex-shrink:0; width:26px; height:26px;
+background:none; border:1px solid var(--border-soft); color:var(--text-dim);
+border-radius:50%; cursor:pointer; transition: all .15s; position:relative;
+}
+.my-map-add-btn:hover{ color:var(--text-main); border-color:var(--text-dim); }
+.my-map-add-btn.active{ background:var(--c-ts); border-color:var(--c-ts); color:#08131c; }
+.my-map-add-btn::after{
+content:'+'; position:absolute; top:-4px; right:-4px; width:12px; height:12px;
+background:var(--c-ts); color:#08131c; border-radius:50%; border:1.5px solid var(--bg-panel);
+font-size:9px; font-weight:800; line-height:1; display:flex; align-items:center; justify-content:center;
+font-family:'Roboto', sans-serif;
+}
+.my-map-add-btn.active::after{ display:none; }
 .zoom-slider-btn{
 width:24px; height:24px; border-radius:0; border:1px solid var(--border-soft);
 background:var(--bg-panel-2); color:var(--text-main); font-size:15px; font-weight:700;
 cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; padding:0;
 font-family:'Roboto', sans-serif; font-weight:600;
 }
-.zoom-slider-btn:hover{ background:rgba(63,208,201,0.18); border-color:var(--c-ts); color:var(--c-ts); }
+.zoom-slider-btn:hover{ background:rgba(242,193,78,0.18); border-color:var(--c-1); color:var(--c-1); }
 #zoomSlider{
 -webkit-appearance:slider-vertical; writing-mode:vertical-lr; direction:rtl;
-width:20px; height:110px; cursor:pointer; accent-color:var(--c-ts); background:transparent;
+width:20px; height:110px; cursor:pointer; accent-color:var(--c-1); background:transparent;
 }
 #leafletMap{ width:100%; height:100%; background: radial-gradient(ellipse at 50% 40%, #0e1d2c 0%, #081019 100%); }
 #basemapToggle{
@@ -456,6 +544,55 @@ flex-wrap:wrap; gap-row:8px;
 .legend-strip .seg{ display:flex; align-items:center; gap:6px; margin-right:18px; font-size:11.5px; color:var(--text-dim); }
 .legend-strip .seg .sw{ width:11px;height:11px;border-radius:50%; }
 .legend-strip .sizekey{ margin-left:auto; font-family:'Roboto', sans-serif; font-weight:600; font-size:10.5px; color:var(--text-faint); display:flex; align-items:center; gap:10px;}
+@media (max-width: 880px){
+html, body{ overflow: auto; height: auto; min-height: 100vh; }
+header.hero{
+display:flex; flex-direction:column; gap:6px;
+padding: 6px 4px 22px;
+border-bottom: 1px solid var(--border-soft);
+margin-bottom: 22px;
+}
+.wrap{ padding: 20px 16px 40px; }
+.layout{
+position: static;
+display: block;
+margin: 20px 0 0;
+}
+#controls{
+position: static;
+width: auto;
+max-width: none;
+top: auto; left: auto; bottom: auto; right: auto;
+box-shadow: none;
+margin-bottom: 20px;
+}
+.layout.sidebar-collapsed #controls{ display:none; }
+.map-panel{
+position: relative;
+inset: auto;
+height: min(70vh, 560px);
+box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+margin-bottom: 20px;
+}
+.map-panel .map-head{
+display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px 16px;
+padding:14px 18px; border-bottom:1px solid var(--border-soft);
+}
+#mapholder{ position:relative; height:calc(100% - 60px); min-height:0; }
+#coordReadout{ right:10px; }
+#zoomSliderWrap{ right:12px; }
+#matchingLandfallsPanel{
+position: static !important;
+width: auto;
+max-height: 420px;
+box-shadow: none;
+margin-bottom: 20px;
+transform: none !important;
+opacity: 1 !important;
+pointer-events: auto !important;
+}
+#landfallsToggleBtn{ display:none; }
+}
 footer{
 margin-top:26px; padding-top:16px; border-top:1px solid var(--border-soft);
 font-size:11.5px; color:var(--text-faint); line-height:1.6;
@@ -484,6 +621,16 @@ font-family:Arial, sans-serif; font-size:12px; font-weight:600;
 </div>
 </div>
 </nav>
+<script>
+(function(){
+function setNavHeight(){
+var nav = document.querySelector('.topnav');
+if(nav) document.documentElement.style.setProperty('--nav-h', nav.getBoundingClientRect().height + 'px');
+}
+setNavHeight();
+window.addEventListener('resize', setNavHeight);
+})();
+</script>
 <div class="wrap">
 <header class="hero">
 <div class="hero-row">
@@ -502,11 +649,43 @@ font-family:Arial, sans-serif; font-size:12px; font-weight:600;
 </header>
 <div class="layout" id="layoutGrid">
 <aside class="panel" id="controls">
+<div class="panel-icon-row">
+<button id="captureMapBtn" class="panel-icon-btn" title="Capture map">
+<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
+<circle cx="12" cy="14" r="3.5"/>
+</svg>
+</button>
+<button id="myMapJumpBtn" class="panel-icon-btn" title="Jump to My Map">
+<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+<circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/>
+<path stroke-width="2.1" d="M13.6 12 L13.9 12.31 L14.14 12.72 L14.29 13.21 L14.32 13.76 L14.23 14.35 L14.01 14.96 L13.64 15.54 L13.14 16.08 L12.5 16.53 L11.74 16.88 L10.89 17.1 L9.96 17.16 L8.98 17.04 L7.99 16.74 L7.03 16.25 L6.13 15.56 L5.32 14.68 L4.66 13.64 L4.16 12.45 L3.86 11.14 L3.79 9.75 L3.96 8.32 L4.39 6.89 L5.07 5.5"/>
+<path stroke-width="2.1" d="M10.4 12 L10.1 11.69 L9.86 11.28 L9.71 10.79 L9.68 10.24 L9.77 9.65 L9.99 9.04 L10.36 8.46 L10.86 7.92 L11.5 7.47 L12.26 7.12 L13.11 6.9 L14.04 6.84 L15.02 6.96 L16.01 7.26 L16.97 7.75 L17.87 8.44 L18.68 9.32 L19.34 10.36 L19.84 11.55 L20.14 12.86 L20.21 14.25 L20.04 15.68 L19.61 17.11 L18.93 18.5"/>
+</svg>
+<span class="my-map-count-badge" id="myMapCountBadge" style="display:none;">0</span>
+</button>
+<button id="shareLinkBtn" class="panel-icon-btn" title="Copy shareable link">
+<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<path d="M12 3v12"/>
+<path d="M8 7l4-4 4 4"/>
+<path d="M5 12v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7"/>
+</svg>
+</button>
+<label class="tracks-toggle-label panel-icon-row-toggle" id="allTracksToggleWrap"><input type="checkbox" id="allTracksToggle"> Show Tracks</label>
+</div>
+<div class="panel-head-row">
+<div class="panel-head-title">Filters</div>
+</div>
+<div id="mapHeadToggles">
+<div class="toggle-row" id="sameYearToggleWrap" style="display:none;"><label><input type="checkbox" id="sameYearToggle"> Show other landfalls from this year</label></div>
+<div class="toggle-row" id="sameIntensityToggleWrap" style="display:none;"><label><input type="checkbox" id="sameIntensityToggle"> Show other landfalls of this intensity</label></div>
+</div>
 <h2>Scope</h2>
 <div class="mode-toggle" id="modeToggle">
 <button class="mode-btn" data-mode="us">United States</button>
 <button class="mode-btn active" data-mode="basin">Full Atlantic Basin</button>
 </div>
+<div class="scope-note">*Data from 2026 (the landfalls of Tropical Storm Arthur, Tropical Storm Bertha, and Tropical Storm Edouard) have not been added to the database yet.</div>
 <div class="divider"></div>
 <h2>Search <button id="clearSearch">clear</button></h2>
 <input class="search-box" id="searchInput" placeholder="Storm name, year, or country…">
@@ -600,11 +779,6 @@ font-family:Arial, sans-serif; font-size:12px; font-weight:600;
 <div class="cnt-label">Showing <b id="shownCount">818</b> of <b id="totalCount">818</b> landfalls</div>
 <div class="cnt-label">from <b id="shownStormCount">0</b> tropical cyclones</div>
 <div class="cnt-label" id="hintLabel">scroll to zoom &middot; drag to pan</div>
-<div id="mapHeadToggles">
-<div class="toggle-row" id="allTracksToggleWrap"><label><input type="checkbox" id="allTracksToggle"> Show all tracks</label></div>
-<div class="toggle-row" id="sameYearToggleWrap" style="display:none;"><label><input type="checkbox" id="sameYearToggle"> Show other landfalls from this year</label></div>
-<div class="toggle-row" id="sameIntensityToggleWrap" style="display:none;"><label><input type="checkbox" id="sameIntensityToggle"> Show other landfalls of this intensity</label></div>
-</div>
 </div>
 <div id="mapholder">
 <div id="leafletMap"></div>
@@ -618,16 +792,18 @@ font-family:Arial, sans-serif; font-size:12px; font-weight:600;
 <button id="zoomInBtn" class="zoom-slider-btn" title="Zoom in">+</button>
 <input type="range" id="zoomSlider" min="3" max="12" step="0.25" value="6.75" orient="vertical">
 <button id="zoomOutBtn" class="zoom-slider-btn" title="Zoom out">&minus;</button>
-<button id="captureMapBtn" class="zoom-slider-btn" title="Capture map">
-<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-<path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
-<circle cx="12" cy="14" r="3.5"/>
-</svg>
-</button>
 </div>
 </div>
 <div class="legend-strip" id="legendStrip"></div>
 </main>
+<button class="panel-collapse-btn" id="landfallsToggleBtn" title="Collapse landfalls panel">&#9654;</button>
+<aside class="panel" id="matchingLandfallsPanel">
+<div class="landfalls-list-head">
+<div class="landfalls-list-title" id="landfallsListTitle">Matching Landfalls</div>
+<div class="landfalls-list-count" id="landfallsListCount">0</div>
+</div>
+<div class="landfalls-list-body" id="landfallsListBody"></div>
+</aside>
 </div>
 <footer>
 <div class="footer-social">
@@ -636,7 +812,6 @@ font-family:Arial, sans-serif; font-size:12px; font-weight:600;
 <a href="https://www.youtube.com/@TheHurricaneUpdate" target="_blank" rel="noopener" title="YouTube"><svg viewBox="0 0 24 24"><path fill="#FF0000" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z"/><path fill="#ffffff" d="M9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span>@FerragamoWx</span></a>
 </div>
 Data across the TROPICAL CYCLONE DATABASE is powered by the Atlantic Hurricane Database (HURDAT2, 1851&ndash;2025) for all landfall positions, wind, and pressure. The database was also utilized to recover landfalls HURDAT2 didn't flag. A landfall counts if a storm&rsquo;s center crosses a coastline at tropical storm strength or above. This website is built as a reference and educational tool, so as always, confirm figures/decisions against the National Hurricane Center&rsquo;s official reports.
-<div style="margin-top:8px; font-size:11px; opacity:0.7;">*Data from 2026 (the landfalls of Tropical Storm Arthur and Tropical Storm Bertha) have not been added to the database yet.</div>
 </footer>
 </div>
 <div id="card"></div>
@@ -817,13 +992,8 @@ buildCategoryList();
 buildStateList();
 buildEnsoList();
 updateHeroText();
-if(MODE==='basin'){
-map.setMaxBounds([[-85, -180], [85, 180]]);
-map.setView([28, -62], 4);
-} else {
-map.setMaxBounds([[-85, -180], [85, 180]]);
-map.setView([28.5, -83.0], 6);
-}
+const bounds = L.latLngBounds(RAW.map(d=>[d.lat, d.lon]));
+if(bounds.isValid()) map.fitBounds(bounds, { paddingTopLeft: [310, 30], paddingBottomRight: [270, 30] });
 render();
 });
 buildStatStrip();
@@ -1157,9 +1327,66 @@ maxZoom: 12,
 zoomSnap: 0.25,
 zoomDelta: 0.5,
 zoomControl: false,
-worldCopyJump: false,
-maxBounds: [[-85, -180], [85, 180]]
+worldCopyJump: false
 });
+const MY_MAP_STORAGE_KEY = 'tcd_landfalls_my_map_storms';
+let myMapKeys = [];
+try{ myMapKeys = JSON.parse(localStorage.getItem(MY_MAP_STORAGE_KEY) || '[]'); }catch(err){ myMapKeys = []; }
+let showingMyMap = false;
+function saveMyMap(){
+try{ localStorage.setItem(MY_MAP_STORAGE_KEY, JSON.stringify(myMapKeys)); }catch(err){}
+}
+function isInMyMap(key){ return myMapKeys.includes(key); }
+function addToMyMap(key){
+if(!isInMyMap(key)){ myMapKeys.push(key); saveMyMap(); updateMyMapBadge(); }
+}
+function removeFromMyMap(key){
+const idx = myMapKeys.indexOf(key);
+if(idx >= 0){
+myMapKeys.splice(idx, 1);
+saveMyMap();
+updateMyMapBadge();
+if(myMapKeys.length === 0 && showingMyMap) exitMyMap();
+else if(showingMyMap) enterMyMap();
+}
+}
+function clearMyMap(){
+myMapKeys = [];
+saveMyMap();
+updateMyMapBadge();
+if(showingMyMap) exitMyMap();
+}
+function getMyMapStorms(){
+const result = [];
+myMapKeys.forEach(key=>{
+const matches = RAW_BASIN.filter(d=>trackKey(d)===key);
+if(matches.length===0) return;
+result.push(matches.find(d=>d.isStrongestLandfall) || matches[0]);
+});
+return result;
+}
+function updateMyMapBadge(){
+const badge = document.getElementById('myMapCountBadge');
+if(!badge) return;
+const n = myMapKeys.length;
+badge.textContent = n > 99 ? '99+' : n;
+badge.style.display = n > 0 ? 'flex' : 'none';
+}
+function enterMyMap(){
+const storms = getMyMapStorms();
+showingMyMap = true;
+pinnedTracks = storms;
+renderPinnedTracks();
+renderLandfallsPanel(storms, true);
+document.getElementById('myMapJumpBtn').classList.add('active');
+}
+function exitMyMap(){
+showingMyMap = false;
+pinnedTracks = [];
+renderPinnedTracks();
+document.getElementById('myMapJumpBtn').classList.remove('active');
+render();
+}
 const layoutGrid = document.getElementById('layoutGrid');
 const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
 sidebarToggleBtn.addEventListener('click', ()=>{
@@ -1168,6 +1395,41 @@ sidebarToggleBtn.innerHTML = collapsed ? '&#9654; Filters' : '&#9664; Filters';
 sidebarToggleBtn.title = collapsed ? 'Expand filter panel' : 'Collapse filter panel';
 // Leaflet needs to know its container resized, or tiles render wrong/cut off until next interaction
 setTimeout(()=>{ map.invalidateSize(); }, 260);
+});
+const landfallsToggleBtn = document.getElementById('landfallsToggleBtn');
+landfallsToggleBtn.addEventListener('click', ()=>{
+const collapsed = layoutGrid.classList.toggle('landfalls-collapsed');
+landfallsToggleBtn.innerHTML = collapsed ? '&#9664;' : '&#9654;';
+landfallsToggleBtn.title = collapsed ? 'Expand landfalls panel' : 'Collapse landfalls panel';
+setTimeout(()=>{ map.invalidateSize(); }, 260);
+});
+updateMyMapBadge();
+document.getElementById('myMapJumpBtn').addEventListener('click', ()=>{
+if(showingMyMap) exitMyMap();
+else enterMyMap();
+});
+const shareLinkBtn = document.getElementById('shareLinkBtn');
+const shareLinkIconHTML = shareLinkBtn.innerHTML;
+const shareLinkCheckHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5 11-11"/></svg>';
+shareLinkBtn.addEventListener('click', ()=>{
+const params = new URLSearchParams();
+if(pinnedTracks.length === 1){
+params.set('year', pinnedTracks[0].year);
+params.set('lat', pinnedTracks[0].lat);
+params.set('lon', pinnedTracks[0].lon);
+}
+const qs = params.toString();
+const url = window.location.origin + window.location.pathname + (qs ? '?' + qs : '');
+const showCopied = ()=>{
+shareLinkBtn.innerHTML = shareLinkCheckHTML;
+shareLinkBtn.title = 'Link copied!';
+setTimeout(()=>{ shareLinkBtn.innerHTML = shareLinkIconHTML; shareLinkBtn.title = 'Copy shareable link'; }, 1500);
+};
+if(navigator.clipboard && navigator.clipboard.writeText){
+navigator.clipboard.writeText(url).then(showCopied).catch(()=>{ window.prompt('Copy this link:', url); });
+}else{
+window.prompt('Copy this link:', url);
+}
 });
 let resizeTimer;
 window.addEventListener('resize', ()=>{
@@ -1309,8 +1571,109 @@ if(!hay.includes(searchTerm)) return false;
 }
 return d.lat != null && d.lon != null;
 }
+const MY_MAP_ICON_SVG = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><path stroke-width="2.1" d="M13.6 12 L13.9 12.31 L14.14 12.72 L14.29 13.21 L14.32 13.76 L14.23 14.35 L14.01 14.96 L13.64 15.54 L13.14 16.08 L12.5 16.53 L11.74 16.88 L10.89 17.1 L9.96 17.16 L8.98 17.04 L7.99 16.74 L7.03 16.25 L6.13 15.56 L5.32 14.68 L4.66 13.64 L4.16 12.45 L3.86 11.14 L3.79 9.75 L3.96 8.32 L4.39 6.89 L5.07 5.5"/><path stroke-width="2.1" d="M10.4 12 L10.1 11.69 L9.86 11.28 L9.71 10.79 L9.68 10.24 L9.77 9.65 L9.99 9.04 L10.36 8.46 L10.86 7.92 L11.5 7.47 L12.26 7.12 L13.11 6.9 L14.04 6.84 L15.02 6.96 L16.01 7.26 L16.97 7.75 L17.87 8.44 L18.68 9.32 L19.34 10.36 L19.84 11.55 L20.14 12.86 L20.21 14.25 L20.04 15.68 L19.61 17.11 L18.93 18.5"/></svg>';
+function renderLandfallDetail(d){
+const bodyEl = document.getElementById('landfallsListBody');
+const countEl = document.getElementById('landfallsListCount');
+const titleEl = document.getElementById('landfallsListTitle');
+if(!bodyEl) return;
+clearDotHoverOutline();
+if(countEl) countEl.textContent = '';
+if(titleEl) titleEl.textContent = 'Landfall Details';
+const catLabel = d.category === 0 ? 'TS' : ('CAT ' + d.category);
+const catFull = CAT_LABEL[d.category] || 'Tropical Storm';
+const dateStr = (MONTH_ABBR[d.month] || '') + ' ' + d.day + ', ' + d.year;
+const rows = [];
+rows.push(['Category', catFull]);
+rows.push(['Peak Wind', (Math.round(d.windMph / 5) * 5) + ' mph (' + (Math.round(d.windKt / 5) * 5) + ' kt)']);
+if(d.pressure != null) rows.push(['Pressure', d.pressure + ' mb']);
+rows.push(['Location', d.statesRaw]);
+if(d.landfallTotal > 1) rows.push(['Landfall', d.landfallSeq + ' of ' + d.landfallTotal + (d.isStrongestLandfall ? ' (strongest)' : '')]);
+if(d.enso) rows.push(['ENSO Phase', d.enso.replace(/_/g, ' ').replace(/\b\w/g, c=>c.toUpperCase())]);
+if(d.fatalities) rows.push(['Fatalities', d.fatalities]);
+if(d.damage) rows.push(['Damage', d.damage]);
+const rowsHtml = rows.map(r => '<div class="landfall-detail-row"><span class="k">' + r[0] + '</span><span class="v">' + r[1] + '</span></div>').join('');
+bodyEl.innerHTML = '<div class="landfall-detail-card">'
++ '<div class="landfall-detail-head">'
++ '<div class="landfall-detail-icon" style="background:' + CAT_COLOR_HEX[d.category] + '">' + catLabel + '</div>'
++ '<div>'
++ '<div class="landfall-detail-name">' + d.displayName + '</div>'
++ '<div class="landfall-detail-sub">' + dateStr + '</div>'
++ '</div>'
++ '</div>'
++ '<div class="landfall-detail-grid">' + rowsHtml + '</div>'
++ '<button class="landfall-detail-back-btn" id="landfallDetailBackBtn">&#8592; Back to List</button>'
++ '</div>';
+const backBtn = document.getElementById('landfallDetailBackBtn');
+if(backBtn) backBtn.addEventListener('click', clearTrack);
+}
+function renderLandfallsPanel(filtered, isMyMap){
+const bodyEl = document.getElementById('landfallsListBody');
+const countEl = document.getElementById('landfallsListCount');
+const titleEl = document.getElementById('landfallsListTitle');
+if(!bodyEl || !countEl) return;
+clearDotHoverOutline();
+if(titleEl) titleEl.textContent = isMyMap ? 'My Map' : 'Matching Landfalls';
+const sorted = filtered.slice().sort((a,b)=>{
+if(b.year !== a.year) return b.year - a.year;
+if(b.month !== a.month) return b.month - a.month;
+return (b.day||0) - (a.day||0);
+});
+countEl.textContent = sorted.length.toLocaleString();
+if(sorted.length === 0){
+bodyEl.innerHTML = isMyMap
+? '<div class="landfalls-empty">Your My Map is empty. Tap the + icon on any storm to add it.</div>'
+: '<div class="landfalls-empty">No landfalls match the current filters.</div>';
+return;
+}
+const CAP = 300;
+const shown = sorted.slice(0, CAP);
+const pinnedKeys = new Set(pinnedTracks.map(trackKey));
+bodyEl.innerHTML = shown.map(d=>{
+const catLabel = d.category === 0 ? 'TS' : ('CAT ' + d.category);
+const dateStr = (MONTH_ABBR[d.month] || '') + ' ' + d.day + ', ' + d.year;
+const activeClass = pinnedKeys.has(trackKey(d)) ? ' active' : '';
+const key = trackKey(d);
+const inMyMap = isInMyMap(key) ? ' active' : '';
+return '<div class="landfall-card' + activeClass + '" data-key="' + key + '">'
++ '<div class="landfall-card-icon" style="background:' + CAT_COLOR_HEX[d.category] + '">' + catLabel + '</div>'
++ '<div class="landfall-card-body">'
++ '<div class="landfall-card-name">' + d.displayName + '</div>'
++ '<div class="landfall-card-meta">' + d.statesRaw + ' \u2014 ' + dateStr + '</div>'
++ '</div>'
++ '<button class="my-map-add-btn' + inMyMap + '" data-key="' + key + '" title="' + (isInMyMap(key) ? 'Remove from My Map' : 'Add to My Map') + '">' + MY_MAP_ICON_SVG + '</button>'
++ '</div>';
+}).join('') + (sorted.length > CAP ? '<div class="landfalls-more-hint">Showing the ' + CAP + ' most recent of ' + sorted.length.toLocaleString() + ' matching landfalls.</div>' : '');
+bodyEl.querySelectorAll('.my-map-add-btn').forEach(btn=>{
+btn.addEventListener('click', (ev)=>{
+ev.stopPropagation();
+const key = btn.dataset.key;
+if(isInMyMap(key)) removeFromMyMap(key);
+else addToMyMap(key);
+if(showingMyMap && !isInMyMap(key)){
+// list is currently the My Map list -- re-render it to drop the removed card
+renderLandfallsPanel(getMyMapStorms(), true);
+}else{
+btn.classList.toggle('active');
+btn.title = isInMyMap(key) ? 'Remove from My Map' : 'Add to My Map';
+}
+});
+});
+bodyEl.querySelectorAll('.landfall-card').forEach((card, i)=>{
+card.addEventListener('click', ()=>{
+const d = shown[i];
+if(d) toggleTrack(d);
+});
+card.addEventListener('mouseenter', ()=>{
+const d = shown[i];
+if(d) showDotHoverOutline(landfallKey(d));
+});
+card.addEventListener('mouseleave', clearDotHoverOutline);
+});
+}
 function render(){
-const filtered = RAW.filter(passesFilters).sort((a,b)=>a.windMph-b.windMph); // draw big storms last (on top)
+if(showingMyMap) return;
+const filtered = RAW.filter(passesFilters).sort((a,b)=>(a.year-b.year) || (a.month-b.month) || (a.day-b.day) || ((+a.time||0)-(+b.time||0))); // draw most recent landfalls last (on top)
 document.getElementById('shownCount').textContent = filtered.length.toLocaleString();
 document.getElementById('totalCount').textContent = RAW.length.toLocaleString();
 const uniqueStorms = new Set();
@@ -1319,6 +1682,7 @@ if(!d.track || d.track.length < 1){ uniqueStorms.add(d.year+'|'+d.lat+'|'+d.lon+
 uniqueStorms.add(d.year+'|'+d.track.length+'|'+d.track[0][4]+'|'+d.track[0][0]+'|'+d.track[0][1]);
 });
 document.getElementById('shownStormCount').textContent = uniqueStorms.size.toLocaleString();
+renderLandfallsPanel(filtered);
 dotsLayer.clearLayers();
 markers = [];
 // draw tracks into the shared SVG BEFORE the dots -- Leaflet's SVG renderer stacks by DOM
@@ -1344,6 +1708,7 @@ suppressNextMapClick = true;
 setTimeout(()=>{ suppressNextMapClick = false; }, 0);
 showTrack(d);
 });
+marker._landfallKey = landfallKey(d);
 marker.addTo(dotsLayer);
 markers.push(marker);
 });
@@ -1600,6 +1965,48 @@ positionCard(ev);
 let pinnedTracks = [];
 let suppressNextMapClick = false;
 function trackKey(d){ return d.year + '|' + d.displayName; }
+function landfallKey(d){ return d.year + '|' + d.displayName + '|' + d.day + '|' + d.time; }
+function showDotHoverOutline(key){
+markers.forEach(m=>{
+if(!m.options || typeof m.options.fillOpacity !== 'number') return;
+if(m._landfallKey === key){
+if(m._origRadius === undefined) m._origRadius = m.options.radius;
+if(m._origColor === undefined) m._origColor = m.options.color;
+if(m._origWeight === undefined) m._origWeight = m.options.weight;
+m.setStyle({ radius: m._origRadius + 4, color: '#ffffff', weight: 2.4 });
+m.bringToFront();
+return;
+}
+if(m._origFillOpacity === undefined) m._origFillOpacity = m.options.fillOpacity;
+if(m._origOpacity === undefined) m._origOpacity = (typeof m.options.opacity === 'number') ? m.options.opacity : 1;
+// keep the stroke fairly crisp while fading the fill -- dimming both toward zero removes the
+// dot's defined edge entirely, leaving a soft, blurry-looking smudge instead of a faint dot
+m.setStyle({ fillOpacity: m._origFillOpacity * 0.07, opacity: Math.max(m._origOpacity * 0.4, 0.22) });
+});
+}
+function clearDotHoverOutline(){
+markers.forEach(m=>{
+if(m._origFillOpacity !== undefined || m._origOpacity !== undefined){
+m.setStyle({
+fillOpacity: m._origFillOpacity !== undefined ? m._origFillOpacity : m.options.fillOpacity,
+opacity: m._origOpacity !== undefined ? m._origOpacity : m.options.opacity
+});
+delete m._origFillOpacity;
+delete m._origOpacity;
+}
+if(m._origRadius !== undefined || m._origColor !== undefined || m._origWeight !== undefined){
+m.setStyle({
+radius: m._origRadius !== undefined ? m._origRadius : m.options.radius,
+color: m._origColor !== undefined ? m._origColor : m.options.color,
+weight: m._origWeight !== undefined ? m._origWeight : m.options.weight
+});
+delete m._origRadius;
+delete m._origColor;
+delete m._origWeight;
+}
+});
+}
+
 function toggleTrack(d){
 const key = trackKey(d);
 const idx = pinnedTracks.findIndex(p=>trackKey(p)===key);
@@ -1613,6 +2020,9 @@ pinnedTracks.push(d);
 pinnedTracks = [d];
 }
 renderPinnedTracks();
+if(pinnedTracks.length > 0){
+map.flyTo([d.lat, d.lon], Math.max(map.getZoom(), 8), { duration: 1.2 });
+}
 }
 function showTrack(d){ toggleTrack(d); }
 function renderPinnedTracks(){
@@ -1623,11 +2033,14 @@ if(!map.hasLayer(dotsLayer)) map.addLayer(dotsLayer);
 document.getElementById('sameYearToggleWrap').style.display = 'none';
 document.getElementById('sameIntensityToggleWrap').style.display = 'none';
 document.getElementById('hintLabel').innerHTML = hintDefault;
+if(showingMyMap) renderLandfallsPanel(getMyMapStorms(), true);
+else render();
 return;
 }
 map.removeLayer(dotsLayer);
 document.getElementById('sameYearToggleWrap').style.display = 'flex';
 document.getElementById('sameIntensityToggleWrap').style.display = 'flex';
+renderLandfallDetail(pinnedTracks[pinnedTracks.length - 1]);
 const pinnedKeys = new Set(pinnedTracks.map(trackKey));
 
 pinnedTracks.forEach(d=>{
@@ -1896,6 +2309,17 @@ captureBtn.disabled = true;
 try{
 const mapholder = document.getElementById('mapholder');
 const mapholderRect = mapholder.getBoundingClientRect();
+// on desktop the filters panel and matching-landfalls panel are docked directly on top of the
+// map, so capturing the full mapholder would include map content the user can't actually see.
+// measuring the panels' own live bounding rects (rather than assuming fixed widths) means this
+// naturally does nothing on mobile, where those panels sit in normal document flow instead of
+// overlapping the map, and it stays correct if the landfalls panel is collapsed.
+const controlsRect = document.getElementById('controls').getBoundingClientRect();
+const landfallsPanelRect = document.getElementById('matchingLandfallsPanel').getBoundingClientRect();
+const overlapsMap = (r) => r.right > mapholderRect.left && r.left < mapholderRect.right && r.bottom > mapholderRect.top && r.top < mapholderRect.bottom;
+let leftInset = overlapsMap(controlsRect) ? Math.max(0, controlsRect.right - mapholderRect.left) : 0;
+let rightInset = overlapsMap(landfallsPanelRect) ? Math.max(0, mapholderRect.right - landfallsPanelRect.left) : 0;
+if(leftInset + rightInset >= mapholderRect.width){ leftInset = 0; rightInset = 0; } // sanity fallback
 // export at a higher pixel density than the CSS layout so the image isn't soft on
 // modern displays -- everything below is still drawn in ordinary logical (CSS-pixel)
 // coordinates; this transform is what turns those into crisp, high-res output pixels.
@@ -1903,7 +2327,7 @@ const mapholderRect = mapholder.getBoundingClientRect();
 // so pushing this higher sharpens all the vector content (dots, tracks, text, watermark)
 // noticeably, and gives the smoothing below the best possible source to work with for tiles.
 const dpr = Math.max(3, (window.devicePixelRatio || 1) * 1.5);
-const logicalW = mapholderRect.width, logicalH = mapholderRect.height;
+const logicalW = mapholderRect.width - leftInset - rightInset, logicalH = mapholderRect.height;
 const canvas = document.createElement('canvas');
 canvas.width = Math.round(logicalW * dpr);
 canvas.height = Math.round(logicalH * dpr);
@@ -1913,6 +2337,11 @@ ctx.imageSmoothingQuality = 'high';
 ctx.scale(dpr, dpr);
 ctx.fillStyle = '#081019';
 ctx.fillRect(0, 0, logicalW, logicalH);
+// everything below positions itself relative to the full mapholder's own origin (via Leaflet's
+// latLngToContainerPoint), so shift the canvas origin to match while it runs, then shift back
+// for the UI chrome (filter summary, watermark) that follows, which is already logicalW/H-relative
+ctx.save();
+ctx.translate(-leftInset, 0);
 await drawMapTilesHighRes(ctx, mapholderRect);
 
 // replicate the current basemap's live CSS tile filter directly on our canvas
@@ -2012,10 +2441,10 @@ ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
 });
 ctx.globalAlpha = 1;
 }
-const filtered = RAW.filter(passesFilters).sort((a,b)=>a.windMph-b.windMph);
+const filtered = RAW.filter(passesFilters).sort((a,b)=>(a.year-b.year) || (a.month-b.month) || (a.day-b.day) || ((+a.time||0)-(+b.time||0)));
 filtered.forEach(d=>{
 const pt = map.latLngToContainerPoint([d.lat, d.lon]);
-if(pt.x < -20 || pt.y < -20 || pt.x > logicalW+20 || pt.y > logicalH+20) return;
+if(pt.x < leftInset-20 || pt.y < -20 || pt.x > leftInset+logicalW+20 || pt.y > logicalH+20) return;
 const isCat5 = d.category===5;
 ctx.beginPath(); ctx.arc(pt.x, pt.y, getDotRadius(d.windMph), 0, Math.PI*2);
 ctx.fillStyle = CAT_COLOR_HEX[d.category];
@@ -2027,6 +2456,7 @@ ctx.lineWidth = isCat5 ? 1.6 : 1;
 ctx.stroke();
 });
 }
+ctx.restore(); // pop the leftInset shift used for map-relative drawing; UI chrome below is already logical-canvas-relative
 
 // active-filter summary, top-left -- only shown when the user has actually narrowed something
 const filterLines = buildFilterSummaryLines();
@@ -2124,7 +2554,6 @@ buildCategoryList();
 buildStateList();
 buildEnsoList();
 updateHeroText();
-map.setMaxBounds([[-85, -180], [85, 180]]);
 render();
 
 let best = null, bestDist = Infinity;
